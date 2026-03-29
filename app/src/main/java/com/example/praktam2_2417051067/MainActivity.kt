@@ -8,7 +8,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +19,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -74,9 +74,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PrakTAM2_2417051067Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = MaterialTheme.colorScheme.background
+                ) { innerPadding ->
                     TesButaWarna(
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .imePadding()
                     )
                 }
             }
@@ -92,10 +97,7 @@ fun TesButaWarna(modifier: Modifier = Modifier) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
-    Box(modifier = modifier
-        .fillMaxSize()
-        .background(Color(0xFFE2DAD1))) {
-
+    Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
@@ -113,12 +115,20 @@ fun TesButaWarna(modifier: Modifier = Modifier) {
                         placeholder = { Text("Masukkan Nama Anda") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
-                        leadingIcon = { Icon(Icons.Outlined.Info, contentDescription = null, tint = Color(0xFF2E2B21)) },
+                        leadingIcon = { 
+                            Icon(
+                                imageVector = Icons.Outlined.Info, 
+                                contentDescription = null, 
+                                tint = MaterialTheme.colorScheme.primary 
+                            ) 
+                        },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF2E2B21),
-                            unfocusedBorderColor = Color(0xFF2E2B21).copy(alpha = 0.5f),
-                            focusedLabelColor = Color(0xFF2E2B21),
-                            cursorColor = Color(0xFF2E2B21)
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            focusedTextColor = MaterialTheme.colorScheme.primary,
+                            unfocusedTextColor = MaterialTheme.colorScheme.primary,
+                            cursorColor = MaterialTheme.colorScheme.primary
                         )
                     )
                 }
@@ -130,8 +140,7 @@ fun TesButaWarna(modifier: Modifier = Modifier) {
                         Text(
                             text = "Daftar Soal (Preview)",
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF2E2B21)
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
@@ -158,8 +167,7 @@ fun TesButaWarna(modifier: Modifier = Modifier) {
                     Text(
                         text = "Lembar Soal Ishihara",
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF2E2B21)
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -182,24 +190,23 @@ fun HeaderSection(nama: String, skor: Int, total: Int) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF2E2B21)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
         shape = RoundedCornerShape(24.dp)
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Text(
                 text = "Tes Buta Warna",
                 style = MaterialTheme.typography.headlineMedium,
-                color = Color(0xFFE2DAD1),
-                fontWeight = FontWeight.ExtraBold
+                color = MaterialTheme.colorScheme.onPrimary
             )
             Text(
                 text = if (nama.isEmpty()) "Halo, Selamat Datang!" else "Halo, $nama!",
                 style = MaterialTheme.typography.bodyLarge,
-                color = Color(0xFFE2DAD1).copy(alpha = 0.8f)
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
             )
             Spacer(modifier = Modifier.height(20.dp))
             Surface(
-                color = Color(0xFFC9BD9E),
+                color = MaterialTheme.colorScheme.secondary,
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
@@ -207,13 +214,21 @@ fun HeaderSection(nama: String, skor: Int, total: Int) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Skor Anda saat ini", color = Color(0xFF2E2B21), fontSize = 12.sp)
-                        Text("$skor dari $total benar", color = Color(0xFF2E2B21), fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text(
+                            text = "Skor Anda saat ini", 
+                            color = MaterialTheme.colorScheme.onSecondary, 
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Normal, fontSize = 12.sp)
+                        )
+                        Text(
+                            text = "$skor dari $total benar", 
+                            color = MaterialTheme.colorScheme.onSecondary, 
+                            style = MaterialTheme.typography.titleMedium
+                        )
                     }
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = null,
-                        tint = Color(0xFF2E2B21),
+                        tint = MaterialTheme.colorScheme.onSecondary,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -230,7 +245,7 @@ fun SmallGalleryItem(butawarna: Butawarna, onClick: () -> Unit) {
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFBEBCC5))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary)
     ) {
         Box(contentAlignment = Alignment.Center) {
             Image(
@@ -248,8 +263,7 @@ fun SmallGalleryItem(butawarna: Butawarna, onClick: () -> Unit) {
                 Text(
                     text = "No. ${butawarna.name}",
                     color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 11.sp,
+                    style = MaterialTheme.typography.labelLarge.copy(fontSize = 11.sp),
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
             }
@@ -266,26 +280,29 @@ fun EnhancedQuizCard(butawarna: Butawarna, onCorrect: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFBEBCC5)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Surface(
-                    color = Color(0xFF2E2B21),
+                    color = MaterialTheme.colorScheme.primary,
                     shape = CircleShape,
                     modifier = Modifier.size(32.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Text(butawarna.name, fontWeight = FontWeight.Bold, color = Color(0xFFE2DAD1), fontSize = 12.sp)
+                        Text(
+                            text = butawarna.name, 
+                            style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.sp), 
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "Angka Berapa Yang Kamu Lihat Pada Gambar Di Bawah?",
+                    text = "Angka Berapa Yang Kamu Lihat?",
                     style = MaterialTheme.typography.titleSmall,
-                    color = Color(0xFF2E2B21),
-                    fontWeight = FontWeight.Bold
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
 
@@ -319,13 +336,18 @@ fun EnhancedQuizCard(butawarna: Butawarna, onCorrect: () -> Unit) {
                     OutlinedTextField(
                         value = inputUser,
                         onValueChange = { inputUser = it },
-                        label = { Text("Angka?") },
+                        placeholder = { Text("Masukan Angka!") },
                         modifier = Modifier.weight(1f),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF2E2B21),
-                            focusedLabelColor = Color(0xFF2E2B21)
+                            focusedBorderColor = MaterialTheme.colorScheme.onPrimary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f),
+                            focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                            focusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
+                            focusedPlaceholderColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f),
+                            unfocusedPlaceholderColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
                         )
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -339,9 +361,13 @@ fun EnhancedQuizCard(butawarna: Butawarna, onCorrect: () -> Unit) {
                         },
                         modifier = Modifier.height(56.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E2B21))
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
-                        Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFFE2DAD1))
+                        Icon(
+                            imageVector = Icons.Default.Check, 
+                            contentDescription = null, 
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 }
             } else {
@@ -362,14 +388,14 @@ fun EnhancedQuizCard(butawarna: Butawarna, onCorrect: () -> Unit) {
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = if (isBenar) "Hore... Jawaban Kamu Benar!" else "Yah... Jawaban Kamu Kurang Tepat",
-                                fontWeight = FontWeight.Bold,
+                                text = if (isBenar) "Benar!" else "Kurang Tepat",
+                                style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp),
                                 color = if (isBenar) Color(0xFF2E7D32) else Color(0xFFC62828)
                             )
                             if (!isBenar) {
                                 Text(
                                     text = "Jawaban: ${butawarna.jawaban}",
-                                    fontSize = 12.sp,
+                                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 12.sp),
                                     color = Color(0xFFC62828)
                                 )
                             }
