@@ -1,7 +1,17 @@
 package Model
 
-import androidx.annotation.DrawableRes
+import com.google.gson.annotations.SerializedName
 
 data class Butawarna(
-    val name: String, val pertanyaan: String, val jawaban: Int, @DrawableRes val ImageRes: Int
+    @SerializedName("name")
+    val name: String,
+
+    @SerializedName("pertanyaan")
+    val pertanyaan: String,
+
+    @SerializedName("jawaban")
+    val jawaban: Int,
+
+    @SerializedName("image_url")
+    val imageUrl: String
 )

@@ -1,12 +1,10 @@
 package com.example.praktam2_2417051067
 
 import Model.Butawarna
-import Model.ButawarnaSource
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -33,9 +31,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.example.praktam2_2417051067.network.RetrofitClient
 import com.example.praktam2_2417051067.ui.theme.PrakTAM2_2417051067Theme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -47,7 +48,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             PrakTAM2_2417051067Theme {
                 val snackbarHostState = remember { SnackbarHostState() }
-                
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     containerColor = MaterialTheme.colorScheme.background,
@@ -67,11 +68,76 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TesButaWarna(modifier: Modifier = Modifier, snackbarHostState: SnackbarHostState) {
-    val daftarSoal = ButawarnaSource.dummyButawarna
+    var daftarSoal by remember { mutableStateOf<List<Butawarna>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var isError by remember { mutableStateOf(false) }
+
     var namaPeserta by remember { mutableStateOf("") }
     var totalBenar by remember { mutableIntStateOf(0) }
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        try {
+            daftarSoal = RetrofitClient.instance.getSoal()
+            isLoading = false
+            isError = false
+        } catch (e: Exception) {
+            isLoading = false
+            isError = true
+        }
+    }
+
+    if (isLoading) {
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Memuat soal...",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+        return
+    }
+
+    if (isError || daftarSoal.isEmpty()) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(32.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = Color.Red,
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Gagal Memuat Soal",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Red
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Pastikan koneksi internet Anda menyala",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+        return
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
@@ -83,6 +149,7 @@ fun TesButaWarna(modifier: Modifier = Modifier, snackbarHostState: SnackbarHostS
             item {
                 HeaderSection(namaPeserta, totalBenar, daftarSoal.size)
             }
+
             item {
                 PaddingWrapper {
                     OutlinedTextField(
@@ -91,12 +158,12 @@ fun TesButaWarna(modifier: Modifier = Modifier, snackbarHostState: SnackbarHostS
                         placeholder = { Text("Masukkan Nama Anda") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
-                        leadingIcon = { 
+                        leadingIcon = {
                             Icon(
-                                imageVector = Icons.Outlined.Info, 
-                                contentDescription = null, 
-                                tint = MaterialTheme.colorScheme.primary 
-                            ) 
+                                imageVector = Icons.Outlined.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -192,13 +259,16 @@ fun HeaderSection(nama: String, skor: Int, total: Int) {
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Skor Anda saat ini", 
-                            color = MaterialTheme.colorScheme.onSecondary, 
-                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Normal, fontSize = 12.sp)
+                            text = "Skor Anda saat ini",
+                            color = MaterialTheme.colorScheme.onSecondary,
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 12.sp
+                            )
                         )
                         Text(
-                            text = "$skor dari $total benar", 
-                            color = MaterialTheme.colorScheme.onSecondary, 
+                            text = "$skor dari $total benar",
+                            color = MaterialTheme.colorScheme.onSecondary,
                             style = MaterialTheme.typography.titleMedium
                         )
                     }
@@ -225,11 +295,13 @@ fun SmallGalleryItem(butawarna: Butawarna, onClick: () -> Unit) {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiary)
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Image(
-                painter = painterResource(id = butawarna.ImageRes),
-                contentDescription = null,
+            AsyncImage(
+                model = butawarna.imageUrl,
+                contentDescription = "Soal ${butawarna.name}",
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(id = R.drawable.tes1),
+                error = painterResource(id = R.drawable.tes1)
             )
             Box(
                 modifier = Modifier
@@ -249,7 +321,11 @@ fun SmallGalleryItem(butawarna: Butawarna, onClick: () -> Unit) {
 }
 
 @Composable
-fun EnhancedQuizCard(butawarna: Butawarna, onCorrect: () -> Unit, snackbarHostState: SnackbarHostState) {
+fun EnhancedQuizCard(
+    butawarna: Butawarna,
+    onCorrect: () -> Unit,
+    snackbarHostState: SnackbarHostState
+) {
     var inputUser by remember { mutableStateOf("") }
     var sudahCek by remember { mutableStateOf(false) }
     var isBenar by remember { mutableStateOf(false) }
@@ -271,8 +347,8 @@ fun EnhancedQuizCard(butawarna: Butawarna, onCorrect: () -> Unit, snackbarHostSt
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
-                            text = butawarna.name, 
-                            style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.sp), 
+                            text = butawarna.name,
+                            style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.sp),
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     }
@@ -295,13 +371,15 @@ fun EnhancedQuizCard(butawarna: Butawarna, onCorrect: () -> Unit, snackbarHostSt
                     .background(Color.Black),
                 contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = butawarna.ImageRes),
-                    contentDescription = null,
+                AsyncImage(
+                    model = butawarna.imageUrl,
+                    contentDescription = "Gambar soal ${butawarna.name}",
                     modifier = Modifier
                         .fillMaxSize(0.9f)
                         .clip(CircleShape),
-                    contentScale = ContentScale.Fit
+                    contentScale = ContentScale.Fit,
+                    placeholder = painterResource(id = R.drawable.tes1),
+                    error = painterResource(id = R.drawable.tes1)
                 )
             }
 
@@ -352,7 +430,9 @@ fun EnhancedQuizCard(butawarna: Butawarna, onCorrect: () -> Unit, snackbarHostSt
                         modifier = Modifier.height(56.dp),
                         enabled = !isLoading,
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
                     ) {
                         if (isLoading) {
                             CircularProgressIndicator(
@@ -362,8 +442,8 @@ fun EnhancedQuizCard(butawarna: Butawarna, onCorrect: () -> Unit, snackbarHostSt
                             )
                         } else {
                             Icon(
-                                imageVector = Icons.Default.Check, 
-                                contentDescription = null, 
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onPrimary
                             )
                         }
