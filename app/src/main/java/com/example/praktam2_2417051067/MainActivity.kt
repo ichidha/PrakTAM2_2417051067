@@ -1,6 +1,6 @@
 package com.example.praktam2_2417051067
 
-import Model.Butawarna
+import com.example.praktam2_2417051067.data.Model.Butawarna
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,7 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.praktam2_2417051067.network.RetrofitClient
+import com.example.praktam2_2417051067.data.repository.ButawarnaRepository
 import com.example.praktam2_2417051067.ui.theme.PrakTAM2_2417051067Theme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -68,6 +68,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TesButaWarna(modifier: Modifier = Modifier, snackbarHostState: SnackbarHostState) {
+    val repository = remember { ButawarnaRepository() }
     var daftarSoal by remember { mutableStateOf<List<Butawarna>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var isError by remember { mutableStateOf(false) }
@@ -78,10 +79,11 @@ fun TesButaWarna(modifier: Modifier = Modifier, snackbarHostState: SnackbarHostS
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
+        isLoading = true
         try {
-            daftarSoal = RetrofitClient.instance.getSoal()
+            daftarSoal = repository.getSoal()
             isLoading = false
-            isError = false
+            isError = daftarSoal.isEmpty()
         } catch (e: Exception) {
             isLoading = false
             isError = true
